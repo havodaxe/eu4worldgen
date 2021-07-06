@@ -2,9 +2,9 @@ import sys,os
 import pygame as pg
 from OpenGL import GL
 from time import time
-from math import floor
 
-RESOLUTION = (500,500)
+RESOLUTION = (1024,1024)
+TEXBLOCK = (512,512)
 
 VERTICES = [ 1.0,  1.0,  0.0,  1.0,
              1.0, -1.0,  0.0,  1.0,
@@ -28,6 +28,7 @@ class GLtests:
     def __init__(self):
         self.shader = GL.glCreateProgram()
         self.vbo = None
+        self.texture_fbo = None
         self.init_all()
         self.reshape(*RESOLUTION)
     def init_all(self):
@@ -35,6 +36,9 @@ class GLtests:
         self.init_vertex_buf()
         vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(vao)
+
+        self.init_tex()
+        self.init_tex_frame_buf()
     def init_vertex_buf(self):
         self.vbo = GL.glGenBuffers(1)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER,self.vbo)
@@ -42,6 +46,30 @@ class GLtests:
         GL.glBufferData(GL.GL_ARRAY_BUFFER,len(VERTICES)*SIZE_FLOAT,
                         array_type(*VERTICES),GL.GL_STATIC_DRAW)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER,0)
+
+    def init_tex(self):
+        self.tex = GL.glGenTextures(1)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, 1)
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER,
+                           GL.GL_NEAREST);
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER,
+                           GL.GL_NEAREST);
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S,
+                           GL.GL_CLAMP_TO_EDGE);
+        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T,
+                           GL.GL_CLAMP_TO_EDGE);
+
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA8, *TEXBLOCK,
+                        0, GL.GL_RGBA, GL.GL_UNSIGNED_INT_8_8_8_8, 0);
+
+    def init_tex_frame_buf(self):
+        self.texture_fbo = GL.glGenFramebuffers(1)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.texture_fbo)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.tex)
+        GL.glFramebufferTexture(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0,
+                                self.tex, 0)
+        GL.glDrawBuffer(GL.GL_COLOR_ATTACHMENT0)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
 
     def attach_shaders(self):
         shade_list = []
@@ -80,6 +108,9 @@ class GLtests:
         GL.glEnableVertexAttribArray(0)
         GL.glVertexAttribPointer(0,VERT_COMPONENTS,GL.GL_FLOAT,False,0,None)
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, len(VERTICES)//VERT_COMPONENTS)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.texture_fbo)
+        GL.glDrawArrays(GL.GL_TRIANGLES, 0, len(VERTICES)//VERT_COMPONENTS)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         GL.glDisableVertexAttribArray(0)
         #GL.glUseProgram(0)
 
