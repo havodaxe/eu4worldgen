@@ -1,7 +1,8 @@
 import sys,os
 import pygame as pg
 from OpenGL import GL
-from time import time
+from time import time, strftime, localtime
+from PIL import Image
 
 RESOLUTION = (1024,1024)
 TEXBLOCK = (512,512)
@@ -133,7 +134,17 @@ def main():
                 print(time() - start_time)
                 pg.quit();sys.exit()
             elif event.type == pg.KEYDOWN:
-                pass
+                if(event.unicode == 'p'):
+                    #print(event)
+                    timestamp = strftime("%Y%m%d-%H%M%S", localtime())
+                    tex_file_name = "texture_output_{}.png".format(timestamp)
+                    print(tex_file_name)
+                    GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.tex)
+                    pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA,
+                                              GL.GL_UNSIGNED_BYTE)
+                    im = Image.frombytes("RGBA", TEXBLOCK, pixels)
+                    im.save(tex_file_name)
+                    print("Saved texture to {}".format(tex_file_name))
         MyGL.display()
         resUniformLoc = GL.glGetUniformLocation(MyGL.shader, "resolution")
         timeUniformLoc = GL.glGetUniformLocation(MyGL.shader, "elapsedTime")

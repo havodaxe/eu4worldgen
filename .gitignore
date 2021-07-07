@@ -1,2 +1,4 @@
 *~
 *.pyc
+texture_output*.png
+texture_output*.bmp
