@@ -22,8 +22,12 @@ SHADER2STRING = {GL.GL_VERTEX_SHADER   : "vertex",
 #Load shaders from files.
 with open("vertex_main.glsl",'r') as myfile:
     VERT = myfile.read()
+with open("fragment_setup.glsl",'r') as myfile:
+    FRAG_SETUP = myfile.read()
 with open("fragment_main.glsl",'r') as myfile:
-    FRAG = myfile.read()
+    FRAG_MAIN = myfile.read()
+
+FRAG = FRAG_SETUP + FRAG_MAIN
 
 class GLtests:
     def __init__(self):
