@@ -1,9 +1,8 @@
-# pgfrags-template
-Python/pygame fragment shader boilerplate
+# EU4 World Generator
+[WIP] EU4 full conversion mod generator
 
-The bulk of this was copied from:
-https://bitbucket.org/Mekire/gltut-python-pygame-pyopengl/
+Work in progress.
 
-02_playing_with_colors/02_FragPosition.py and its dependencies were
-modified to provide a single screen-covering rectangle for drawing and
-uniforms for time and resolution.
+All files are under GNU General Public License version 3 (see LICENSE),
+but some files are additionally licensed under MIT and are marked as
+such.
