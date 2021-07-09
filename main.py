@@ -36,7 +36,7 @@ from OpenGL import GL
 from time import time, strftime, localtime
 from PIL import Image
 
-RESOLUTION = (1024,1024)
+RESOLUTION = (1650,600)
 TEXBLOCK = (512,512)
 
 VERTICES = [ 1.0,  1.0,  0.0,  1.0,
@@ -56,10 +56,12 @@ with open("vertex_main.glsl",'r') as myfile:
     VERT = myfile.read()
 with open("fragment_setup.glsl",'r') as myfile:
     FRAG_SETUP = myfile.read()
+with open("fragment_noise.glsl",'r') as myfile:
+    FRAG_NOISE = myfile.read()
 with open("fragment_main.glsl",'r') as myfile:
     FRAG_MAIN = myfile.read()
 
-FRAG = FRAG_SETUP + FRAG_MAIN
+FRAG = FRAG_SETUP + FRAG_NOISE + FRAG_MAIN
 
 class GLtests:
     def __init__(self):
