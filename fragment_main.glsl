@@ -33,7 +33,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   //float bottomlerp = min(uv.y * 3, 1);
   float bottomlerp = smoothstep(0, 0.4, uv.y);
   //float toplerp = min((uv.y - tau * r) * -3, 1);
-  float toplerp = 1 - smoothstep((tau * 4/11) - 0.4, tau * 4/11, uv.y);
+  float toplerp = 1 - smoothstep(tau * r - 0.4, tau * r, uv.y);
 
   float wateredge = f - 0.44;
 
