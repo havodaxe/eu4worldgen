@@ -11,20 +11,20 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   float r = iResolution.y / iResolution.x;
   vec2 uv = p*vec2(iResolution.x/iResolution.y,1.0 ) * tau * r;
   vec2 o_uv = uv + vec2(4.14, 0);
-  vec3 coat = vec3(cos(o_uv.x), sin(o_uv.x), o_uv.y);
+  vec3 latsurf = vec3(cos(o_uv.x), sin(o_uv.x), o_uv.y);
 
   float f = 0.0;
 
-  float b1m = 2.0;
+  float bm = 1.0;
 
-  f += (0.5 / 1)  * noise(coat * 0.5 * b1m);
-  f += (0.5 / 2)  * noise(coat * 1 * b1m);
-  f += (0.5 / 4)  * noise(coat * 2 * b1m);
-  f += (0.5 / 8)  * noise(coat * 4 * b1m);
-  f += (0.5 / 16) * noise(coat * 8 * b1m);
-  f += (0.5 / 32) * noise(coat * 16 * b1m);
-  f += (0.5 / 64) * noise(coat * 32 * b1m);
-  f += (0.5 / 128) * noise(coat * 64 * b1m);
+  f += (0.5 /   1) * noise(latsurf *  1   * bm);
+  f += (0.5 /   2) * noise(latsurf *  2   * bm);
+  f += (0.5 /   4) * noise(latsurf *  4   * bm);
+  f += (0.5 /   8) * noise(latsurf *  8   * bm);
+  f += (0.5 /  16) * noise(latsurf * 16   * bm);
+  f += (0.5 /  32) * noise(latsurf * 32   * bm);
+  f += (0.5 /  64) * noise(latsurf * 64   * bm);
+  f += (0.5 / 128) * noise(latsurf * 128  * bm);
 
   //float leftlerp = min(uv.x * 3, 1);
   float leftlerp = smoothstep(0, 0.5, uv.x);
