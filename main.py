@@ -138,20 +138,21 @@ class GLtests:
             log = GL.glGetProgramInfoLog(self.shader)
             raise ShaderException("Linking failure:\n{}\n".format(log))
 
-    def display(self):
+    def display(self, elapsedTime, resolution):
         GL.glClearColor(1,1,1,1)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         GL.glUseProgram(self.shader)
+        resUniformLoc = GL.glGetUniformLocation(self.shader, "resolution")
+        timeUniformLoc = GL.glGetUniformLocation(self.shader, "elapsedTime")
+        GL.glUniform2f(resUniformLoc, *resolution)
+        GL.glUniform1f(timeUniformLoc, elapsedTime)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER,self.vbo)
         GL.glEnableVertexAttribArray(0)
         GL.glVertexAttribPointer(0,VERT_COMPONENTS,GL.GL_FLOAT,False,0,None)
         GL.glDrawArrays(GL.GL_TRIANGLES, 0, len(VERTICES)//VERT_COMPONENTS)
-        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.texture_fbo)
-        GL.glDrawArrays(GL.GL_TRIANGLES, 0, len(VERTICES)//VERT_COMPONENTS)
-        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         GL.glDisableVertexAttribArray(0)
-        #GL.glUseProgram(0)
+        GL.glUseProgram(0)
 
     def reshape(self,width,height):
         GL.glViewport(0,0,width,height)
@@ -166,14 +167,18 @@ def main():
     MyClock = pg.time.Clock()
     MyGL = GLtests()
     start_time = time()
+    elapsedTime = 0
     while 1:
         for event in pg.event.get():
             if event.type==pg.QUIT or (event.type==pg.KEYDOWN and event.key==pg.K_ESCAPE):
-                print(time() - start_time)
+                print(elapsedTime)
                 pg.quit();sys.exit()
             elif event.type == pg.KEYDOWN:
                 if(event.unicode == 'p'):
                     #print(event)
+                    GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.texture_fbo)
+                    MyGL.display(elapsedTime, RESOLUTION)
+                    GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
                     timestamp = strftime("%Y%m%d-%H%M%S", localtime())
                     tex_file_name = "texture_output_{}.png".format(timestamp)
                     print(tex_file_name)
@@ -183,12 +188,8 @@ def main():
                     im = Image.frombytes("RGBA", TEXBLOCK, pixels)
                     im.save(tex_file_name)
                     print("Saved texture to {}".format(tex_file_name))
-        MyGL.display()
-        resUniformLoc = GL.glGetUniformLocation(MyGL.shader, "resolution")
-        timeUniformLoc = GL.glGetUniformLocation(MyGL.shader, "elapsedTime")
-        GL.glUniform2f(resUniformLoc, *SCREEN.get_size())
-        GL.glUniform1f(timeUniformLoc, time() - start_time)
-        GL.glUseProgram(0)
+        elapsedTime = time() - start_time
+        MyGL.display(elapsedTime, RESOLUTION)
         pg.display.flip()
         MyClock.tick(60)
 
