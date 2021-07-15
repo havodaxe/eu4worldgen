@@ -7,7 +7,7 @@ float tau = 3.14159265 * 2;
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-  vec2 p = fragCoord.xy / iResolution.xy;
+  vec2 p = (fragCoord.xy + renderOffset) / iResolution.xy;
   float r = iResolution.y / iResolution.x;
   vec2 uv = p*vec2(iResolution.x/iResolution.y,1.0 ) * tau * r;
   vec2 o_uv = uv + vec2(4.14, 0);
@@ -25,6 +25,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   f += (0.5 /  32) * noise(latsurf * 32   * bm);
   f += (0.5 /  64) * noise(latsurf * 64   * bm);
   f += (0.5 / 128) * noise(latsurf * 128  * bm);
+  f += (0.5 / 256) * noise(latsurf * 256  * bm);
 
   //float leftlerp = min(uv.x * 3, 1);
   float leftlerp = smoothstep(0, 0.5, uv.x);

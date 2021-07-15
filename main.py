@@ -141,13 +141,15 @@ class GLtests:
             log = GL.glGetProgramInfoLog(self.shader)
             raise ShaderException("Linking failure:\n{}\n".format(log))
 
-    def display(self, elapsedTime, resolution):
+    def display(self, elapsedTime, resolution, renderOffset):
         GL.glClearColor(1,1,1,1)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         GL.glUseProgram(self.shader)
+        roUniformLoc = GL.glGetUniformLocation(self.shader, "renderOffset")
         resUniformLoc = GL.glGetUniformLocation(self.shader, "resolution")
         timeUniformLoc = GL.glGetUniformLocation(self.shader, "elapsedTime")
+        GL.glUniform2f(roUniformLoc, *renderOffset)
         GL.glUniform2f(resUniformLoc, *resolution)
         GL.glUniform1f(timeUniformLoc, elapsedTime)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER,self.vbo)
@@ -178,21 +180,37 @@ def main():
                 pg.quit();sys.exit()
             elif event.type == pg.KEYDOWN:
                 if(event.unicode == 'p'):
-                    #print(event)
+                    #loopdims = (4,2)
+                    loopdims = BASE_SIZE
+                    texsize = (loopdims[0] * TEXBLOCK[0],
+                              loopdims[1] * TEXBLOCK[1])
+                    print(texsize)
+                    if(texsize[0] * texsize[1] > 8192 * 8192):
+                        raise ValueError("Image too large to be rendered.")
+                    tex_preflip = Image.new("RGBA", texsize)
                     GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.texture_fbo)
-                    MyGL.display(elapsedTime, DISPLAYRES)
+                    GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.tex)
+                    for y in range(loopdims[1]):
+                        for x in range(loopdims[0]):
+                            texoffset = (TEXBLOCK[0] * x, TEXBLOCK[0] * y)
+                            MyGL.display(elapsedTime, TEXRES, texoffset)
+                            pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0,
+                                                      GL.GL_RGBA,
+                                                      GL.GL_UNSIGNED_BYTE)
+                            im = Image.frombytes("RGBA", TEXBLOCK, pixels)
+                            texbox = (*texoffset,
+                                      texoffset[0] + TEXBLOCK[0],
+                                      texoffset[1] + TEXBLOCK[1])
+                            tex_preflip.paste(im, texbox)
                     GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
                     timestamp = strftime("%Y%m%d-%H%M%S", localtime())
                     tex_file_name = "texture_output_{}.png".format(timestamp)
                     print(tex_file_name)
-                    GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.tex)
-                    pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA,
-                                              GL.GL_UNSIGNED_BYTE)
-                    im = Image.frombytes("RGBA", TEXBLOCK, pixels)
-                    im.save(tex_file_name)
+                    tex_out = tex_preflip.transpose(Image.FLIP_TOP_BOTTOM)
+                    tex_out.save(tex_file_name)
                     print("Saved texture to {}".format(tex_file_name))
         elapsedTime = time() - start_time
-        MyGL.display(elapsedTime, DISPLAYRES)
+        MyGL.display(elapsedTime, DISPLAYRES, (0,0))
         pg.display.flip()
         MyClock.tick(60)
 

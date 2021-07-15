@@ -2,6 +2,7 @@
 
 out vec4 outputColor;
 
+uniform vec2 renderOffset;
 uniform vec2 resolution;
 uniform float elapsedTime;
 
