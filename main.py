@@ -36,8 +36,11 @@ from OpenGL import GL
 from time import time, strftime, localtime
 from PIL import Image
 
-RESOLUTION = (1650,600)
+BASE_SIZE = (11,4)
 TEXBLOCK = (512,512)
+DISPLAYBLOCK = (150,150)
+DISPLAYRES = (BASE_SIZE[0] * DISPLAYBLOCK[0], BASE_SIZE[1] * DISPLAYBLOCK[1])
+TEXRES = (BASE_SIZE[0] * TEXBLOCK[0], BASE_SIZE[1] * TEXBLOCK[1])
 
 VERTICES = [ 1.0,  1.0,  0.0,  1.0,
              1.0, -1.0,  0.0,  1.0,
@@ -69,7 +72,7 @@ class GLtests:
         self.vbo = None
         self.texture_fbo = None
         self.init_all()
-        self.reshape(*RESOLUTION)
+        self.reshape(*DISPLAYRES)
     def init_all(self):
         self.attach_shaders()
         self.init_vertex_buf()
@@ -163,7 +166,7 @@ class ShaderException(Exception):
 def main():
     pg.init()
     os.environ['SDL_VIDEO_CENTERED'] = '1'
-    SCREEN = pg.display.set_mode(RESOLUTION,pg.HWSURFACE|pg.OPENGL|pg.DOUBLEBUF)
+    SCREEN = pg.display.set_mode(DISPLAYRES,pg.HWSURFACE|pg.OPENGL|pg.DOUBLEBUF)
     MyClock = pg.time.Clock()
     MyGL = GLtests()
     start_time = time()
@@ -177,7 +180,7 @@ def main():
                 if(event.unicode == 'p'):
                     #print(event)
                     GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.texture_fbo)
-                    MyGL.display(elapsedTime, RESOLUTION)
+                    MyGL.display(elapsedTime, DISPLAYRES)
                     GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
                     timestamp = strftime("%Y%m%d-%H%M%S", localtime())
                     tex_file_name = "texture_output_{}.png".format(timestamp)
@@ -189,7 +192,7 @@ def main():
                     im.save(tex_file_name)
                     print("Saved texture to {}".format(tex_file_name))
         elapsedTime = time() - start_time
-        MyGL.display(elapsedTime, RESOLUTION)
+        MyGL.display(elapsedTime, DISPLAYRES)
         pg.display.flip()
         MyClock.tick(60)
 
