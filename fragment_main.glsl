@@ -56,10 +56,12 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
   if(f <0.5)
     {
+      f = min(0.495, f);
       g = 0.5 * f;
     }
   else
     {
+      f = max(0.505, f);
       b = 0.0;
     }
   fragColor = vec4( f * float(isTexture), g, b, 1.0 );
