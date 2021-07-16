@@ -141,14 +141,16 @@ class GLtests:
             log = GL.glGetProgramInfoLog(self.shader)
             raise ShaderException("Linking failure:\n{}\n".format(log))
 
-    def display(self, elapsedTime, resolution, renderOffset):
+    def display(self, elapsedTime, resolution, renderOffset, isTexture):
         GL.glClearColor(1,1,1,1)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         GL.glUseProgram(self.shader)
+        isTexUniformLoc = GL.glGetUniformLocation(self.shader, "isTexture")
         roUniformLoc = GL.glGetUniformLocation(self.shader, "renderOffset")
         resUniformLoc = GL.glGetUniformLocation(self.shader, "resolution")
         timeUniformLoc = GL.glGetUniformLocation(self.shader, "elapsedTime")
+        GL.glUniform1f(isTexUniformLoc, isTexture)
         GL.glUniform2f(roUniformLoc, *renderOffset)
         GL.glUniform2f(resUniformLoc, *resolution)
         GL.glUniform1f(timeUniformLoc, elapsedTime)
@@ -187,17 +189,17 @@ def main():
                     print(texsize)
                     if(texsize[0] * texsize[1] > 8192 * 8192):
                         raise ValueError("Image too large to be rendered.")
-                    tex_preflip = Image.new("RGBA", texsize)
+                    tex_preflip = Image.new("L", texsize)
                     GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.texture_fbo)
                     GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.tex)
                     for y in range(loopdims[1]):
                         for x in range(loopdims[0]):
                             texoffset = (TEXBLOCK[0] * x, TEXBLOCK[0] * y)
-                            MyGL.display(elapsedTime, TEXRES, texoffset)
+                            MyGL.display(elapsedTime, TEXRES, texoffset, True)
                             pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0,
                                                       GL.GL_RGBA,
                                                       GL.GL_UNSIGNED_BYTE)
-                            im = Image.frombytes("RGBA", TEXBLOCK, pixels)
+                            im = Image.frombytes("L", TEXBLOCK, pixels[0::4])
                             texbox = (*texoffset,
                                       texoffset[0] + TEXBLOCK[0],
                                       texoffset[1] + TEXBLOCK[1])
@@ -210,7 +212,7 @@ def main():
                     tex_out.save(tex_file_name)
                     print("Saved texture to {}".format(tex_file_name))
         elapsedTime = time() - start_time
-        MyGL.display(elapsedTime, DISPLAYRES, (0,0))
+        MyGL.display(elapsedTime, DISPLAYRES, (0,0), False)
         pg.display.flip()
         MyClock.tick(60)
 

@@ -62,7 +62,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     {
       b = 0.0;
     }
-  fragColor = vec4( 0.0, g, b, 1.0 );
+  fragColor = vec4( f * float(isTexture), g, b, 1.0 );
 }
 
 out vec4 glFragColor;
