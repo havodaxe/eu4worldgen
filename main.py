@@ -93,16 +93,15 @@ class GLtests:
         self.tex = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 1)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER,
-                           GL.GL_NEAREST);
+                           GL.GL_NEAREST)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER,
-                           GL.GL_NEAREST);
+                           GL.GL_NEAREST)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S,
-                           GL.GL_CLAMP_TO_EDGE);
+                           GL.GL_CLAMP_TO_EDGE)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T,
-                           GL.GL_CLAMP_TO_EDGE);
-
+                           GL.GL_CLAMP_TO_EDGE)
         GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA8, *TEXBLOCK,
-                        0, GL.GL_RGBA, GL.GL_UNSIGNED_INT_8_8_8_8, 0);
+                        0, GL.GL_RGBA, GL.GL_UNSIGNED_INT_8_8_8_8, 0)
 
     def init_tex_frame_buf(self):
         self.texture_fbo = GL.glGenFramebuffers(1)
@@ -179,7 +178,8 @@ def main():
         for event in pg.event.get():
             if event.type==pg.QUIT or (event.type==pg.KEYDOWN and event.key==pg.K_ESCAPE):
                 print(elapsedTime)
-                pg.quit();sys.exit()
+                pg.quit()
+                sys.exit()
             elif event.type == pg.KEYDOWN:
                 if(event.unicode == 'p'):
                     #loopdims = (4,2)
