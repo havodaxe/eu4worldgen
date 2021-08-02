@@ -70,7 +70,8 @@ class GLtests:
     def __init__(self):
         self.shader = GL.glCreateProgram()
         self.vbo = None
-        self.texture_fbo = None
+        self.terrain_tex = None
+        self.terrain_fbo = None
         self.init_all()
         self.reshape(*DISPLAYRES)
     def init_all(self):
@@ -79,8 +80,8 @@ class GLtests:
         vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(vao)
 
-        self.init_tex()
-        self.init_tex_frame_buf()
+        self.terrain_tex = self.init_tex()
+        self.terrain_fbo = self.init_tex_frame_buf(self.terrain_tex)
     def init_vertex_buf(self):
         self.vbo = GL.glGenBuffers(1)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER,self.vbo)
@@ -90,7 +91,7 @@ class GLtests:
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER,0)
 
     def init_tex(self):
-        self.tex = GL.glGenTextures(1)
+        tex = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, 1)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER,
                            GL.GL_NEAREST)
@@ -102,15 +103,17 @@ class GLtests:
                            GL.GL_CLAMP_TO_EDGE)
         GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, *TEXRES,
                         0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, None)
+        return tex
 
-    def init_tex_frame_buf(self):
-        self.texture_fbo = GL.glGenFramebuffers(1)
-        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, self.texture_fbo)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self.tex)
+    def init_tex_frame_buf(self, tex):
+        texture_fbo = GL.glGenFramebuffers(1)
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, texture_fbo)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, tex)
         GL.glFramebufferTexture(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0,
-                                self.tex, 0)
+                                tex, 0)
         GL.glDrawBuffer(GL.GL_COLOR_ATTACHMENT0)
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+        return texture_fbo
 
     def attach_shaders(self):
         shade_list = []
@@ -182,8 +185,8 @@ def main():
                 sys.exit()
             elif event.type == pg.KEYDOWN:
                 if(event.unicode == 'p'):
-                    GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.texture_fbo)
-                    GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.tex)
+                    GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.terrain_fbo)
+                    GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.terrain_tex)
                     # start of rendering
                     MyGL.reshape(*TEXRES)
                     MyGL.display(elapsedTime, TEXRES, (0,0), True)
