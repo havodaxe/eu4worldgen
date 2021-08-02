@@ -100,8 +100,8 @@ class GLtests:
                            GL.GL_CLAMP_TO_EDGE)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T,
                            GL.GL_CLAMP_TO_EDGE)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA8, *TEXBLOCK,
-                        0, GL.GL_RGBA, GL.GL_UNSIGNED_INT_8_8_8_8, 0)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, *TEXBLOCK,
+                        0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, None)
 
     def init_tex_frame_buf(self):
         self.texture_fbo = GL.glGenFramebuffers(1)
