@@ -100,7 +100,7 @@ class GLtests:
                            GL.GL_CLAMP_TO_EDGE)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T,
                            GL.GL_CLAMP_TO_EDGE)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, *TEXBLOCK,
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, *TEXRES,
                         0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, None)
 
     def init_tex_frame_buf(self):
@@ -182,28 +182,16 @@ def main():
                 sys.exit()
             elif event.type == pg.KEYDOWN:
                 if(event.unicode == 'p'):
-                    #loopdims = (4,2)
-                    loopdims = BASE_SIZE
-                    texsize = (loopdims[0] * TEXBLOCK[0],
-                              loopdims[1] * TEXBLOCK[1])
-                    print(texsize)
-                    if(texsize[0] * texsize[1] > 8192 * 8192):
-                        raise ValueError("Image too large to be rendered.")
-                    tex_preflip = Image.new("L", texsize)
                     GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.texture_fbo)
                     GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.tex)
-                    for y in range(loopdims[1]):
-                        for x in range(loopdims[0]):
-                            texoffset = (TEXBLOCK[0] * x, TEXBLOCK[0] * y)
-                            MyGL.display(elapsedTime, TEXRES, texoffset, True)
-                            pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0,
-                                                      GL.GL_RGBA,
-                                                      GL.GL_UNSIGNED_BYTE)
-                            im = Image.frombytes("L", TEXBLOCK, pixels[0::4])
-                            texbox = (*texoffset,
-                                      texoffset[0] + TEXBLOCK[0],
-                                      texoffset[1] + TEXBLOCK[1])
-                            tex_preflip.paste(im, texbox)
+                    # start of rendering
+                    MyGL.reshape(*TEXRES)
+                    MyGL.display(elapsedTime, TEXRES, (0,0), True)
+                    pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0,
+                                              GL.GL_RED,
+                                              GL.GL_UNSIGNED_BYTE)
+                    tex_preflip = Image.frombytes("L", TEXRES, pixels)
+                    # end of rendering
                     GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
                     timestamp = strftime("%Y%m%d-%H%M%S", localtime())
                     tex_file_name = "texture_output_{}.png".format(timestamp)
@@ -212,6 +200,7 @@ def main():
                     tex_out.save(tex_file_name)
                     print("Saved texture to {}".format(tex_file_name))
         elapsedTime = time() - start_time
+        MyGL.reshape(*DISPLAYRES)
         MyGL.display(elapsedTime, DISPLAYRES, (0,0), False)
         pg.display.flip()
         MyClock.tick(60)
