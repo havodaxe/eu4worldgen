@@ -64,18 +64,18 @@ with open("fragment_noise.glsl",'r') as myfile:
 with open("fragment_main.glsl",'r') as myfile:
     FRAG_MAIN = myfile.read()
 
-FRAG = FRAG_SETUP + FRAG_NOISE + FRAG_MAIN
+TERRAIN_FRAG = FRAG_SETUP + FRAG_NOISE + FRAG_MAIN
 
 class GLtests:
     def __init__(self):
-        self.shader = GL.glCreateProgram()
+        self.terrain_shader = GL.glCreateProgram()
         self.vbo = None
         self.terrain_tex = None
         self.terrain_fbo = None
         self.init_all()
         self.reshape(*DISPLAYRES)
     def init_all(self):
-        self.attach_shaders()
+        self.attach_shaders(self.terrain_shader, TERRAIN_FRAG)
         self.init_vertex_buf()
         vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(vao)
@@ -115,15 +115,15 @@ class GLtests:
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         return texture_fbo
 
-    def attach_shaders(self):
+    def attach_shaders(self, shader, frag):
         shade_list = []
         shade_list.append(self.compile(GL.GL_VERTEX_SHADER,VERT))
-        shade_list.append(self.compile(GL.GL_FRAGMENT_SHADER,FRAG))
+        shade_list.append(self.compile(GL.GL_FRAGMENT_SHADER,frag))
         for shade in shade_list:
-            GL.glAttachShader(self.shader,shade)
-        self.link()
+            GL.glAttachShader(shader,shade)
+        self.link(shader)
         for shade in shade_list:
-            GL.glDetachShader(self.shader,shade)
+            GL.glDetachShader(shader,shade)
             GL.glDeleteShader(shade)
     def compile(self,shader_type,shader_str):
         shader = GL.glCreateShader(shader_type)
@@ -136,22 +136,22 @@ class GLtests:
             raise ShaderException("Compile failure in {} shader:\n{}\n".format(shader_name,log))
         return shader
 
-    def link(self):
-        GL.glLinkProgram(self.shader)
-        status = GL.glGetProgramiv(self.shader,GL.GL_LINK_STATUS)
+    def link(self, shader):
+        GL.glLinkProgram(shader)
+        status = GL.glGetProgramiv(shader,GL.GL_LINK_STATUS)
         if not status:
-            log = GL.glGetProgramInfoLog(self.shader)
+            log = GL.glGetProgramInfoLog(shader)
             raise ShaderException("Linking failure:\n{}\n".format(log))
 
-    def display(self, elapsedTime, resolution, renderOffset, isTexture):
+    def display(self, elapsedTime, resolution, renderOffset, isTexture, shader):
         GL.glClearColor(1,1,1,1)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-        GL.glUseProgram(self.shader)
-        isTexUniformLoc = GL.glGetUniformLocation(self.shader, "isTexture")
-        roUniformLoc = GL.glGetUniformLocation(self.shader, "renderOffset")
-        resUniformLoc = GL.glGetUniformLocation(self.shader, "resolution")
-        timeUniformLoc = GL.glGetUniformLocation(self.shader, "elapsedTime")
+        GL.glUseProgram(shader)
+        isTexUniformLoc = GL.glGetUniformLocation(shader, "isTexture")
+        roUniformLoc = GL.glGetUniformLocation(shader, "renderOffset")
+        resUniformLoc = GL.glGetUniformLocation(shader, "resolution")
+        timeUniformLoc = GL.glGetUniformLocation(shader, "elapsedTime")
         GL.glUniform1f(isTexUniformLoc, isTexture)
         GL.glUniform2f(roUniformLoc, *renderOffset)
         GL.glUniform2f(resUniformLoc, *resolution)
@@ -189,7 +189,8 @@ def main():
                     GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.terrain_tex)
                     # start of rendering
                     MyGL.reshape(*TEXRES)
-                    MyGL.display(elapsedTime, TEXRES, (0,0), True)
+                    MyGL.display(elapsedTime, TEXRES, (0,0), True,
+                                 MyGL.terrain_shader)
                     pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0,
                                               GL.GL_RED,
                                               GL.GL_UNSIGNED_BYTE)
@@ -204,7 +205,7 @@ def main():
                     print("Saved texture to {}".format(tex_file_name))
         elapsedTime = time() - start_time
         MyGL.reshape(*DISPLAYRES)
-        MyGL.display(elapsedTime, DISPLAYRES, (0,0), False)
+        MyGL.display(elapsedTime, DISPLAYRES, (0,0), False, MyGL.terrain_shader)
         pg.display.flip()
         MyClock.tick(60)
 
