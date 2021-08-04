@@ -57,14 +57,14 @@ SHADER2STRING = {GL.GL_VERTEX_SHADER   : "vertex",
 #Load shaders from files.
 with open("vertex_main.glsl",'r') as myfile:
     VERT = myfile.read()
-with open("fragment_setup.glsl",'r') as myfile:
-    FRAG_SETUP = myfile.read()
-with open("fragment_noise.glsl",'r') as myfile:
-    FRAG_NOISE = myfile.read()
-with open("fragment_main.glsl",'r') as myfile:
-    FRAG_MAIN = myfile.read()
+with open("terrain_fragment_setup.glsl",'r') as myfile:
+    TERRAIN_FRAG_SETUP = myfile.read()
+with open("terrain_fragment_noise.glsl",'r') as myfile:
+    TERRAIN_FRAG_NOISE = myfile.read()
+with open("terrain_fragment_main.glsl",'r') as myfile:
+    TERRAIN_FRAG_MAIN = myfile.read()
 
-TERRAIN_FRAG = FRAG_SETUP + FRAG_NOISE + FRAG_MAIN
+TERRAIN_FRAG = TERRAIN_FRAG_SETUP + TERRAIN_FRAG_NOISE + TERRAIN_FRAG_MAIN
 
 class GLtests:
     def __init__(self):
