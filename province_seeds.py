@@ -9,9 +9,9 @@ from random import seed, randint
 from PIL import Image
 import numpy as np
 
-red = 0
-green = 85
-blue = 170
+INITRED = 0
+INITGREEN = 85
+INITBLUE = 170
 # By keeping the colours offset like this we ensure that the first few
 # colours at least are saturated and not complete black
 seed(0)
@@ -22,11 +22,16 @@ out = Image.new("RGBA", (5632,2048), (0,0,0,255))
 for i in range(1600):
     seed_coords.append(( randint(0, out.width - 1),
                          randint(0, out.height - 1) ))
-    out.putpixel(seed_coords[i], (red, green, blue, 0)) # Alpha is distance
-    red = (red + 13) % 256
-    green = (green + 17) % 256
-    blue = (blue + 19) % 256
-    # Like periodical cicadas. Not sure how rigorous this approach is.
+    red =   (INITRED   + 13 * i + i // 256)   % 256
+    green = (INITGREEN + 17 * i + i // 65536) % 256
+    blue =  (INITBLUE  + 19 * i)              % 256
+    # After each loop through the 256 colour values, red shifts over by 1
+    # And after 256 * 256 loops, green shifts over by 1
+    # This process ensures that eventually, each colour gets visited.
+    # The prime numbers are just to make it look nicer and similar to how
+    # it was before.
+    out.putpixel(seed_coords[i], (red, green, blue, 0))
+    # Alpha is distance to seed
 
 print(len(seed_coords))
 
