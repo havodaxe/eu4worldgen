@@ -35,6 +35,7 @@ import pygame as pg
 from OpenGL import GL
 from time import time, strftime, localtime
 from PIL import Image
+import province_seeds
 
 BASE_SIZE = (11,4)
 TEXBLOCK = (512,512)
@@ -57,6 +58,7 @@ SHADER2STRING = {GL.GL_VERTEX_SHADER   : "vertex",
 #Load shaders from files.
 with open("vertex_main.glsl",'r') as myfile:
     VERT = myfile.read()
+
 with open("terrain_fragment_setup.glsl",'r') as myfile:
     TERRAIN_FRAG_SETUP = myfile.read()
 with open("terrain_fragment_noise.glsl",'r') as myfile:
@@ -66,22 +68,33 @@ with open("terrain_fragment_main.glsl",'r') as myfile:
 
 TERRAIN_FRAG = TERRAIN_FRAG_SETUP + TERRAIN_FRAG_NOISE + TERRAIN_FRAG_MAIN
 
+with open("province_fragment_main.glsl",'r') as myfile:
+    PROVINCE_FRAG = myfile.read()
+
+PROVINCE_SEEDS = province_seeds.seed_image_norm_floats
+
 class GLtests:
     def __init__(self):
         self.terrain_shader = GL.glCreateProgram()
+        self.province_shader = GL.glCreateProgram()
         self.vbo = None
         self.terrain_tex = None
         self.terrain_fbo = None
+        self.province_tex = None
+        self.province_fbo = None
         self.init_all()
         self.reshape(*DISPLAYRES)
     def init_all(self):
         self.attach_shaders(self.terrain_shader, TERRAIN_FRAG)
+        self.attach_shaders(self.province_shader, PROVINCE_FRAG)
         self.init_vertex_buf()
         vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(vao)
-
-        self.terrain_tex = self.init_tex()
+        self.terrain_tex = self.init_tex(None)
         self.terrain_fbo = self.init_tex_frame_buf(self.terrain_tex)
+        self.province_tex = self.init_tex(PROVINCE_SEEDS)
+        self.province_fbo = self.init_tex_frame_buf(self.province_tex)
+
     def init_vertex_buf(self):
         self.vbo = GL.glGenBuffers(1)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER,self.vbo)
@@ -90,19 +103,22 @@ class GLtests:
                         array_type(*VERTICES),GL.GL_STATIC_DRAW)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER,0)
 
-    def init_tex(self):
+    def init_tex(self, tex_input):
         tex = GL.glGenTextures(1)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, 1)
+        GL.glActiveTexture(GL.GL_TEXTURE0 + tex)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, tex)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER,
                            GL.GL_NEAREST)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER,
                            GL.GL_NEAREST)
+        GL.glTexParameterfv(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_BORDER_COLOR,
+                            (0, 0, 0, 1))
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S,
-                           GL.GL_CLAMP_TO_EDGE)
+                           GL.GL_CLAMP_TO_BORDER)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T,
-                           GL.GL_CLAMP_TO_EDGE)
-        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, *TEXRES,
-                        0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, None)
+                           GL.GL_CLAMP_TO_BORDER)
+        GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA32F, *TEXRES,
+                        0, GL.GL_RGBA, GL.GL_FLOAT, tex_input)
         return tex
 
     def init_tex_frame_buf(self, tex):
@@ -144,18 +160,19 @@ class GLtests:
             raise ShaderException("Linking failure:\n{}\n".format(log))
 
     def display(self, elapsedTime, resolution, renderOffset, isTexture, shader):
-        GL.glClearColor(1,1,1,1)
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-
+        #GL.glClearColor(1,1,1,1)
+        #GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         GL.glUseProgram(shader)
         isTexUniformLoc = GL.glGetUniformLocation(shader, "isTexture")
         roUniformLoc = GL.glGetUniformLocation(shader, "renderOffset")
         resUniformLoc = GL.glGetUniformLocation(shader, "resolution")
         timeUniformLoc = GL.glGetUniformLocation(shader, "elapsedTime")
+        provinceTexLoc = GL.glGetUniformLocation(shader, "provinces")
         GL.glUniform1f(isTexUniformLoc, isTexture)
         GL.glUniform2f(roUniformLoc, *renderOffset)
         GL.glUniform2f(resUniformLoc, *resolution)
         GL.glUniform1f(timeUniformLoc, elapsedTime)
+        GL.glUniform1i(provinceTexLoc, self.province_tex)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER,self.vbo)
         GL.glEnableVertexAttribArray(0)
         GL.glVertexAttribPointer(0,VERT_COMPONENTS,GL.GL_FLOAT,False,0,None)
@@ -186,15 +203,15 @@ def main():
             elif event.type == pg.KEYDOWN:
                 if(event.unicode == 'p'):
                     GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.terrain_fbo)
-                    GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.terrain_tex)
+                    #GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.terrain_tex)
                     # start of rendering
                     MyGL.reshape(*TEXRES)
                     MyGL.display(elapsedTime, TEXRES, (0,0), True,
-                                 MyGL.terrain_shader)
+                                 MyGL.province_shader)
                     pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0,
-                                              GL.GL_RED,
+                                              GL.GL_RGBA,
                                               GL.GL_UNSIGNED_BYTE)
-                    tex_preflip = Image.frombytes("L", TEXRES, pixels)
+                    tex_preflip = Image.frombytes("RGBA", TEXRES, pixels)
                     # end of rendering
                     GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
                     timestamp = strftime("%Y%m%d-%H%M%S", localtime())
@@ -204,8 +221,17 @@ def main():
                     tex_out.save(tex_file_name)
                     print("Saved texture to {}".format(tex_file_name))
         elapsedTime = time() - start_time
+        # Render to screen
         MyGL.reshape(*DISPLAYRES)
-        MyGL.display(elapsedTime, DISPLAYRES, (0,0), False, MyGL.terrain_shader)
+        MyGL.display(elapsedTime, DISPLAYRES, (0,0), False,
+                     MyGL.province_shader)
+        # Render to province texture
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.province_fbo)
+        MyGL.reshape(*TEXRES)
+        MyGL.display(elapsedTime, TEXRES, (0,0), False,
+                     MyGL.province_shader)
+        # Reset framebuffer to default
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         pg.display.flip()
         MyClock.tick(60)
 

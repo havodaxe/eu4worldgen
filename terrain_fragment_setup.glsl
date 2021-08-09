@@ -9,3 +9,5 @@ uniform float elapsedTime;
 
 vec2 iResolution = resolution;
 float iTime = elapsedTime;
+
+uniform sampler2D provinces;
