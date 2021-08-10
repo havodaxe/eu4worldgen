@@ -27,70 +27,80 @@ vec2 coordNorm( in vec2 fragCoord )
   return vec2(fragCoord.xy / iResolution.xy);
 }
 
+void costCalc( out vec4 lowest, out float dts,
+	       in vec4 pNeighbor, in vec4 pMid,
+	       in vec4 tNeighbor, in vec4 tMid, in float len )
+{
+  lowest = pNeighbor;
+  dts = len;
+  dts = len * (1 + abs(tNeighbor.r * 255 - tMid.r * 255) * 10);
+}
+
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
   float diagCost = sqrtOf2;
   // 2.8 is worth considering with how lumpy it makes things
   //diagCost = (sin(iTime) * sin(iTime) + 1) * sqrt2;
-  vec2 normCoords = fragCoord.xy / iResolution.xy;
-  vec2 nc = coordNorm( fragCoord );
-  vec4 botleft  = texture( provinces, coordNorm(fragCoord + vec2(-1,-1)) );
-  vec4 bottom   = texture( provinces, coordNorm(fragCoord + vec2( 0,-1)) );
-  vec4 botright = texture( provinces, coordNorm(fragCoord + vec2( 1,-1)) );
-  vec4 left     = texture( provinces, coordNorm(fragCoord + vec2(-1, 0)) );
-  vec4 mid      = texture( provinces, coordNorm(fragCoord + vec2( 0, 0)) );
-  vec4 right    = texture( provinces, coordNorm(fragCoord + vec2( 1, 0)) );
-  vec4 topleft  = texture( provinces, coordNorm(fragCoord + vec2(-1, 1)) );
-  vec4 top      = texture( provinces, coordNorm(fragCoord + vec2( 0, 1)) );
-  vec4 topright = texture( provinces, coordNorm(fragCoord + vec2( 1, 1)) );
+  vec4 pBotleft  = texture( provinces, coordNorm(fragCoord + vec2(-1,-1)) );
+  vec4 pBottom   = texture( provinces, coordNorm(fragCoord + vec2( 0,-1)) );
+  vec4 pBotright = texture( provinces, coordNorm(fragCoord + vec2( 1,-1)) );
+  vec4 pLeft     = texture( provinces, coordNorm(fragCoord + vec2(-1, 0)) );
+  vec4 pMid      = texture( provinces, coordNorm(fragCoord + vec2( 0, 0)) );
+  vec4 pRight    = texture( provinces, coordNorm(fragCoord + vec2( 1, 0)) );
+  vec4 pTopleft  = texture( provinces, coordNorm(fragCoord + vec2(-1, 1)) );
+  vec4 pTop      = texture( provinces, coordNorm(fragCoord + vec2( 0, 1)) );
+  vec4 pTopright = texture( provinces, coordNorm(fragCoord + vec2( 1, 1)) );
+  // terrain samples
+  vec4 tBotleft  = texture( terrain, coordNorm(fragCoord + vec2(-1,-1)) );
+  vec4 tBottom   = texture( terrain, coordNorm(fragCoord + vec2( 0,-1)) );
+  vec4 tBotright = texture( terrain, coordNorm(fragCoord + vec2( 1,-1)) );
+  vec4 tLeft     = texture( terrain, coordNorm(fragCoord + vec2(-1, 0)) );
+  vec4 tMid      = texture( terrain, coordNorm(fragCoord + vec2( 0, 0)) );
+  vec4 tRight    = texture( terrain, coordNorm(fragCoord + vec2( 1, 0)) );
+  vec4 tTopleft  = texture( terrain, coordNorm(fragCoord + vec2(-1, 1)) );
+  vec4 tTop      = texture( terrain, coordNorm(fragCoord + vec2( 0, 1)) );
+  vec4 tTopright = texture( terrain, coordNorm(fragCoord + vec2( 1, 1)) );
 
   // Distance to seed pixel is stored in the alpha channel
   vec4 lowest = vec4(0, 0, 0, 1);
-  float dts = 255.0; // Distance to seed
-  if(botleft.a < lowest.a)
+  float dts = 510; // Distance to seed
+  if(pBotleft.a < lowest.a)
     {
-      lowest = botleft;
-      dts = diagCost;
+      costCalc(lowest, dts, pBotleft, pMid, tBotleft, tMid, diagCost);
     }
-  if(bottom.a < lowest.a)
+  if(pBottom.a < lowest.a)
     {
-      lowest = bottom;
-      dts = 1.0;
+      costCalc(lowest, dts, pBottom, pMid, tBottom, tMid, 1.0);
     }
-  if(botright.a < lowest.a)
+  if(pBotright.a < lowest.a)
     {
-      lowest = botright;
-      dts = diagCost;
+      costCalc(lowest, dts, pBotright, pMid, tBotright, tMid, diagCost);
     }
-  if(left.a < lowest.a)
+  if(pLeft.a < lowest.a)
     {
-      lowest = left;
-      dts = 1.0;
+      costCalc(lowest, dts, pLeft, pMid, tLeft, tMid, 1.0);
     }
-  if(mid.a < lowest.a)
+  if(pMid.a < lowest.a)
     {
-      lowest = mid;
+      lowest = pMid;
       dts = 0.0;
+      // No need to compare here. No distance to self.
     }
-  if(right.a < lowest.a)
+  if(pRight.a < lowest.a)
     {
-      lowest = right;
-      dts = 1.0;
+      costCalc(lowest, dts, pRight, pMid, tRight, tMid, 1.0);
     }
-  if(topleft.a < lowest.a)
+  if(pTopleft.a < lowest.a)
     {
-      lowest = topleft;
-      dts = diagCost;
+      costCalc(lowest, dts, pTopleft, pMid, tTopleft, tMid, diagCost);
     }
-  if(top.a < lowest.a)
+  if(pTop.a < lowest.a)
     {
-      lowest = top;
-      dts = 1.0;
+      costCalc(lowest, dts, pTop, pMid, tTop, tMid, 1.0);
     }
-  if(topright.a < lowest.a)
+  if(pTopright.a < lowest.a)
     {
-      lowest = topright;
-      dts = diagCost;
+      costCalc(lowest, dts, pTopright, pMid, tTopright, tMid, diagCost);
     }
 
   if(lowest.rgb == vec3(0.0, 0.0, 0.0))
@@ -99,7 +109,16 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
       dts = 1.0;
     }
 
-  fragColor = lowest + vec4(0, 0, 0, dts / 256);
+  fragColor = lowest + vec4(0, 0, 0, dts / 512);
+  //fragColor = tMid;
+}
+
+void diffviz( out vec4 fragColor, in vec2 fragCoord )
+{
+  vec4 mid      = texture( terrain, coordNorm(fragCoord + vec2( 0, 0)) );
+  vec4 botleft  = texture( terrain, coordNorm(fragCoord + vec2(-1, 0)) );
+  float f = abs(mid.r * 255 - botleft.r * 255) / 2.6;
+  fragColor = vec4(f,f,f,1);
   //fragColor = mid;
 }
 
@@ -108,4 +127,5 @@ void main()
   //glFragColor.w = 1.;
 
   mainImage(glFragColor, gl_FragCoord.xy );
+  //diffviz(glFragColor, gl_FragCoord.xy );
 }

@@ -235,7 +235,7 @@ def main():
         # Render province shader to texture
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.province_fbo)
         MyGL.reshape(*TEXRES)
-        MyGL.display(elapsedTime, TEXRES, (0,0), False,
+        MyGL.display(elapsedTime, TEXRES, (0,0), True,
                      MyGL.province_shader)
         # Reset framebuffer to default
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
