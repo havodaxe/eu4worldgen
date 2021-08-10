@@ -168,11 +168,13 @@ class GLtests:
         resUniformLoc = GL.glGetUniformLocation(shader, "resolution")
         timeUniformLoc = GL.glGetUniformLocation(shader, "elapsedTime")
         provinceTexLoc = GL.glGetUniformLocation(shader, "provinces")
+        terrainTexLoc = GL.glGetUniformLocation(shader, "terrain")
         GL.glUniform1f(isTexUniformLoc, isTexture)
         GL.glUniform2f(roUniformLoc, *renderOffset)
         GL.glUniform2f(resUniformLoc, *resolution)
         GL.glUniform1f(timeUniformLoc, elapsedTime)
         GL.glUniform1i(provinceTexLoc, self.province_tex)
+        GL.glUniform1i(terrainTexLoc, self.terrain_tex)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER,self.vbo)
         GL.glEnableVertexAttribArray(0)
         GL.glVertexAttribPointer(0,VERT_COMPONENTS,GL.GL_FLOAT,False,0,None)
@@ -206,12 +208,12 @@ def main():
                     #GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.terrain_tex)
                     # start of rendering
                     MyGL.reshape(*TEXRES)
-                    MyGL.display(elapsedTime, TEXRES, (0,0), True,
-                                 MyGL.province_shader)
+                    MyGL.display(elapsedTime, TEXRES, (0,0), False,
+                                 MyGL.terrain_shader)
                     pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0,
-                                              GL.GL_RGBA,
+                                              GL.GL_RGB,
                                               GL.GL_UNSIGNED_BYTE)
-                    tex_preflip = Image.frombytes("RGBA", TEXRES, pixels)
+                    tex_preflip = Image.frombytes("RGB", TEXRES, pixels)
                     # end of rendering
                     GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
                     timestamp = strftime("%Y%m%d-%H%M%S", localtime())
@@ -221,11 +223,16 @@ def main():
                     tex_out.save(tex_file_name)
                     print("Saved texture to {}".format(tex_file_name))
         elapsedTime = time() - start_time
-        # Render to screen
+        # Render province shader to screen
         MyGL.reshape(*DISPLAYRES)
         MyGL.display(elapsedTime, DISPLAYRES, (0,0), False,
                      MyGL.province_shader)
-        # Render to province texture
+        # Render terrain shader to texture
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.terrain_fbo)
+        MyGL.reshape(*TEXRES)
+        MyGL.display(elapsedTime, TEXRES, (0,0), True,
+                     MyGL.terrain_shader)
+        # Render province shader to texture
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.province_fbo)
         MyGL.reshape(*TEXRES)
         MyGL.display(elapsedTime, TEXRES, (0,0), False,
