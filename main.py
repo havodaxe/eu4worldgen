@@ -82,6 +82,8 @@ class GLtests:
         self.terrain_fbo = None
         self.province_tex = None
         self.province_fbo = None
+        self.output_tex = None
+        self.output_fbo = None
         self.init_all()
         self.reshape(*DISPLAYRES)
     def init_all(self):
@@ -94,6 +96,8 @@ class GLtests:
         self.terrain_fbo = self.init_tex_frame_buf(self.terrain_tex)
         self.province_tex = self.init_tex(PROVINCE_SEEDS)
         self.province_fbo = self.init_tex_frame_buf(self.province_tex)
+        self.output_tex = self.init_tex(None)
+        self.output_fbo = self.init_tex_frame_buf(self.output_tex)
 
     def init_vertex_buf(self):
         self.vbo = GL.glGenBuffers(1)
@@ -204,13 +208,13 @@ def main():
                 sys.exit()
             elif event.type == pg.KEYDOWN:
                 if(event.unicode == 'p'):
-                    GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.terrain_fbo)
-                    GL.glActiveTexture(GL.GL_TEXTURE0 + MyGL.terrain_tex)
-                    GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.terrain_tex)
+                    GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.output_fbo)
+                    GL.glActiveTexture(GL.GL_TEXTURE0 + MyGL.output_tex)
+                    GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.output_tex)
                     # start of rendering
                     MyGL.reshape(*TEXRES)
                     MyGL.display(elapsedTime, TEXRES, (0,0), True,
-                                 MyGL.terrain_shader)
+                                 MyGL.province_shader)
                     pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0,
                                               GL.GL_RGB,
                                               GL.GL_UNSIGNED_BYTE)
