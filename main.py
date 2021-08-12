@@ -68,15 +68,15 @@ with open("terrain_fragment_main.glsl",'r') as myfile:
 
 TERRAIN_FRAG = TERRAIN_FRAG_SETUP + TERRAIN_FRAG_NOISE + TERRAIN_FRAG_MAIN
 
-with open("province_fragment_main.glsl",'r') as myfile:
-    PROVINCE_FRAG = myfile.read()
+with open("province_generation_fragment_main.glsl",'r') as myfile:
+    PROVINCE_GENERATION_FRAG = myfile.read()
 
 PROVINCE_SEEDS = province_seeds.seed_image_norm_floats
 
 class GLtests:
     def __init__(self):
         self.terrain_shader = GL.glCreateProgram()
-        self.province_shader = GL.glCreateProgram()
+        self.province_generation_shader = GL.glCreateProgram()
         self.vbo = None
         self.terrain_tex = None
         self.terrain_fbo = None
@@ -88,7 +88,8 @@ class GLtests:
         self.reshape(*DISPLAYRES)
     def init_all(self):
         self.attach_shaders(self.terrain_shader, TERRAIN_FRAG)
-        self.attach_shaders(self.province_shader, PROVINCE_FRAG)
+        self.attach_shaders(self.province_generation_shader,
+                            PROVINCE_GENERATION_FRAG)
         self.init_vertex_buf()
         vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(vao)
@@ -214,7 +215,7 @@ def main():
                     # start of rendering
                     MyGL.reshape(*TEXRES)
                     MyGL.display(elapsedTime, TEXRES, (0,0), True,
-                                 MyGL.province_shader)
+                                 MyGL.province_generation_shader)
                     pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0,
                                               GL.GL_RGB,
                                               GL.GL_UNSIGNED_BYTE)
@@ -237,12 +238,12 @@ def main():
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.province_fbo)
         MyGL.reshape(*TEXRES)
         MyGL.display(elapsedTime, TEXRES, (0,0), True,
-                     MyGL.province_shader)
+                     MyGL.province_generation_shader)
         # Render province shader to screen
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         MyGL.reshape(*DISPLAYRES)
         MyGL.display(elapsedTime, DISPLAYRES, (0,0), False,
-                     MyGL.province_shader)
+                     MyGL.province_generation_shader)
         pg.display.flip()
         MyClock.tick(60)
 
