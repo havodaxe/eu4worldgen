@@ -205,10 +205,11 @@ def main():
             elif event.type == pg.KEYDOWN:
                 if(event.unicode == 'p'):
                     GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.terrain_fbo)
-                    #GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.terrain_tex)
+                    GL.glActiveTexture(GL.GL_TEXTURE0 + MyGL.terrain_tex)
+                    GL.glBindTexture(GL.GL_TEXTURE_2D, MyGL.terrain_tex)
                     # start of rendering
                     MyGL.reshape(*TEXRES)
-                    MyGL.display(elapsedTime, TEXRES, (0,0), False,
+                    MyGL.display(elapsedTime, TEXRES, (0,0), True,
                                  MyGL.terrain_shader)
                     pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0,
                                               GL.GL_RGB,
@@ -223,10 +224,6 @@ def main():
                     tex_out.save(tex_file_name)
                     print("Saved texture to {}".format(tex_file_name))
         elapsedTime = time() - start_time
-        # Render province shader to screen
-        MyGL.reshape(*DISPLAYRES)
-        MyGL.display(elapsedTime, DISPLAYRES, (0,0), False,
-                     MyGL.province_shader)
         # Render terrain shader to texture
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.terrain_fbo)
         MyGL.reshape(*TEXRES)
@@ -237,8 +234,11 @@ def main():
         MyGL.reshape(*TEXRES)
         MyGL.display(elapsedTime, TEXRES, (0,0), True,
                      MyGL.province_shader)
-        # Reset framebuffer to default
+        # Render province shader to screen
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
+        MyGL.reshape(*DISPLAYRES)
+        MyGL.display(elapsedTime, DISPLAYRES, (0,0), False,
+                     MyGL.province_shader)
         pg.display.flip()
         MyClock.tick(60)
 
