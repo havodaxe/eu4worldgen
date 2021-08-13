@@ -74,7 +74,7 @@ with open("province_generation_fragment_main.glsl",'r') as myfile:
 with open("province_combine_fragment_main.glsl",'r') as myfile:
     PROVINCE_COMBINE_FRAG = myfile.read()
 
-PROVINCE_SEEDS = province_seeds.seed_image_norm_floats
+PROVINCE_SEEDS = province_seeds.generate_seeds()
 
 class GLtests:
     def __init__(self):
