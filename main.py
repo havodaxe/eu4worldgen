@@ -35,7 +35,10 @@ import pygame as pg
 from OpenGL import GL
 from time import time, strftime, localtime
 from PIL import Image
-import province_seeds
+from province_seeds import generate_seeds
+
+# The output of generate_seeds takes about 350 MB of memory at default
+# resolution. Be careful with how you handle it.
 
 BASE_SIZE = (11,4)
 TEXBLOCK = (512,512)
@@ -74,8 +77,6 @@ with open("province_generation_fragment_main.glsl",'r') as myfile:
 with open("province_combine_fragment_main.glsl",'r') as myfile:
     PROVINCE_COMBINE_FRAG = myfile.read()
 
-LAND_PROVINCE_SEEDS = province_seeds.generate_seeds()
-
 class GLtests:
     def __init__(self):
         self.terrain_shader = GL.glCreateProgram()
@@ -101,7 +102,7 @@ class GLtests:
         GL.glBindVertexArray(vao)
         self.terrain_tex = self.init_tex(None)
         self.terrain_fbo = self.init_tex_frame_buf(self.terrain_tex)
-        self.land_province_tex = self.init_tex(LAND_PROVINCE_SEEDS)
+        self.land_province_tex = self.init_tex(generate_seeds())
         self.land_province_fbo = self.init_tex_frame_buf(self.land_province_tex)
         self.output_tex = self.init_tex(None)
         self.output_fbo = self.init_tex_frame_buf(self.output_tex)
