@@ -74,7 +74,7 @@ with open("province_generation_fragment_main.glsl",'r') as myfile:
 with open("province_combine_fragment_main.glsl",'r') as myfile:
     PROVINCE_COMBINE_FRAG = myfile.read()
 
-PROVINCE_SEEDS = province_seeds.generate_seeds()
+LAND_PROVINCE_SEEDS = province_seeds.generate_seeds()
 
 class GLtests:
     def __init__(self):
@@ -84,8 +84,8 @@ class GLtests:
         self.vbo = None
         self.terrain_tex = None
         self.terrain_fbo = None
-        self.province_tex = None
-        self.province_fbo = None
+        self.land_province_tex = None
+        self.land_province_fbo = None
         self.output_tex = None
         self.output_fbo = None
         self.init_all()
@@ -101,8 +101,8 @@ class GLtests:
         GL.glBindVertexArray(vao)
         self.terrain_tex = self.init_tex(None)
         self.terrain_fbo = self.init_tex_frame_buf(self.terrain_tex)
-        self.province_tex = self.init_tex(PROVINCE_SEEDS)
-        self.province_fbo = self.init_tex_frame_buf(self.province_tex)
+        self.land_province_tex = self.init_tex(LAND_PROVINCE_SEEDS)
+        self.land_province_fbo = self.init_tex_frame_buf(self.land_province_tex)
         self.output_tex = self.init_tex(None)
         self.output_fbo = self.init_tex_frame_buf(self.output_tex)
 
@@ -184,7 +184,7 @@ class GLtests:
         GL.glUniform2f(roUniformLoc, *renderOffset)
         GL.glUniform2f(resUniformLoc, *resolution)
         GL.glUniform1f(timeUniformLoc, elapsedTime)
-        GL.glUniform1i(provinceTexLoc, self.province_tex)
+        GL.glUniform1i(provinceTexLoc, self.land_province_tex)
         GL.glUniform1i(terrainTexLoc, self.terrain_tex)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER,self.vbo)
         GL.glEnableVertexAttribArray(0)
@@ -240,8 +240,8 @@ def main():
         MyGL.reshape(*TEXRES)
         MyGL.display(elapsedTime, TEXRES, (0,0), True,
                      MyGL.terrain_shader)
-        # Render province generation shader to texture
-        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.province_fbo)
+        # Render land province generation shader to texture
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.land_province_fbo)
         MyGL.reshape(*TEXRES)
         MyGL.display(elapsedTime, TEXRES, (0,0), True,
                      MyGL.province_generation_shader)
