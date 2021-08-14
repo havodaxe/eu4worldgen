@@ -12,7 +12,7 @@ uniform float elapsedTime;
 vec2 iResolution = resolution;
 float iTime = elapsedTime;
 
-uniform sampler2D provinces;
+uniform sampler2D selfProvinces;
 uniform sampler2D terrain;
 
 /* ----- main ----- */
@@ -41,15 +41,15 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   float diagCost = sqrtOf2;
   // 2.8 is worth considering with how lumpy it makes things
   //diagCost = (sin(iTime) * sin(iTime) + 1) * sqrt2;
-  vec4 pBotleft  = texture( provinces, coordNorm(fragCoord + vec2(-1,-1)) );
-  vec4 pBottom   = texture( provinces, coordNorm(fragCoord + vec2( 0,-1)) );
-  vec4 pBotright = texture( provinces, coordNorm(fragCoord + vec2( 1,-1)) );
-  vec4 pLeft     = texture( provinces, coordNorm(fragCoord + vec2(-1, 0)) );
-  vec4 pMid      = texture( provinces, coordNorm(fragCoord + vec2( 0, 0)) );
-  vec4 pRight    = texture( provinces, coordNorm(fragCoord + vec2( 1, 0)) );
-  vec4 pTopleft  = texture( provinces, coordNorm(fragCoord + vec2(-1, 1)) );
-  vec4 pTop      = texture( provinces, coordNorm(fragCoord + vec2( 0, 1)) );
-  vec4 pTopright = texture( provinces, coordNorm(fragCoord + vec2( 1, 1)) );
+  vec4 pBotleft  = texture( selfProvinces, coordNorm(fragCoord + vec2(-1,-1)) );
+  vec4 pBottom   = texture( selfProvinces, coordNorm(fragCoord + vec2( 0,-1)) );
+  vec4 pBotright = texture( selfProvinces, coordNorm(fragCoord + vec2( 1,-1)) );
+  vec4 pLeft     = texture( selfProvinces, coordNorm(fragCoord + vec2(-1, 0)) );
+  vec4 pMid      = texture( selfProvinces, coordNorm(fragCoord + vec2( 0, 0)) );
+  vec4 pRight    = texture( selfProvinces, coordNorm(fragCoord + vec2( 1, 0)) );
+  vec4 pTopleft  = texture( selfProvinces, coordNorm(fragCoord + vec2(-1, 1)) );
+  vec4 pTop      = texture( selfProvinces, coordNorm(fragCoord + vec2( 0, 1)) );
+  vec4 pTopright = texture( selfProvinces, coordNorm(fragCoord + vec2( 1, 1)) );
   // terrain samples
   vec4 tBotleft  = texture( terrain, coordNorm(fragCoord + vec2(-1,-1)) );
   vec4 tBottom   = texture( terrain, coordNorm(fragCoord + vec2( 0,-1)) );

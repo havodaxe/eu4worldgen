@@ -10,5 +10,5 @@ uniform float elapsedTime;
 vec2 iResolution = resolution;
 float iTime = elapsedTime;
 
-uniform sampler2D provinces;
+uniform sampler2D selfProvinces;
 uniform sampler2D terrain;

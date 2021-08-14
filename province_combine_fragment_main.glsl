@@ -12,7 +12,7 @@ uniform float elapsedTime;
 vec2 iResolution = resolution;
 float iTime = elapsedTime;
 
-uniform sampler2D provinces;
+uniform sampler2D selfProvinces;
 uniform sampler2D terrain;
 
 /* ----- main ----- */
@@ -26,8 +26,8 @@ vec2 coordNorm( in vec2 fragCoord )
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-  vec4 land = texture( provinces, coordNorm(fragCoord) );
-  vec4 tMid = texture( terrain,   coordNorm(fragCoord) );
+  vec4 land = texture( selfProvinces, coordNorm(fragCoord) );
+  vec4 tMid = texture( terrain,       coordNorm(fragCoord) );
 
   vec4 colorOut = land;
 
