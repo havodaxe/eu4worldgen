@@ -33,7 +33,10 @@ void costCalc( out vec4 lowest, out float dts,
 {
   lowest = pNeighbor;
   dts = len;
-  dts = len * (1 + abs(tNeighbor.r * 255 - tMid.r * 255) * 10);
+    if(tMid.r > 0.5)
+    {
+      dts = len * (1 + abs(tNeighbor.r * 255 - tMid.r * 255) * 10);
+    }
 }
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
@@ -107,6 +110,14 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     {
       lowest = vec4(0.0, 0.0, 0.0, 1.0);
       dts = 1.0;
+    }
+
+  if(tMid.r < 0.5)
+    {
+      if(pMid.a == 0.0 || lowest.a == 0.0)
+	{
+	  lowest = vec4(0.0, 0.0, 0.0, 1.0);
+	}
     }
 
   fragColor = lowest + vec4(0, 0, 0, dts / 512);
