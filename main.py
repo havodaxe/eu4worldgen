@@ -87,6 +87,8 @@ class GLtests:
         self.terrain_fbo = None
         self.land_province_tex = None
         self.land_province_fbo = None
+        self.water_province_tex = None
+        self.water_province_fbo = None
         self.output_tex = None
         self.output_fbo = None
         self.init_all()
@@ -102,8 +104,10 @@ class GLtests:
         GL.glBindVertexArray(vao)
         self.terrain_tex = self.init_tex(None)
         self.terrain_fbo = self.init_tex_frame_buf(self.terrain_tex)
-        self.land_province_tex = self.init_tex(generate_seeds())
+        self.land_province_tex = self.init_tex(generate_seeds(land=True))
         self.land_province_fbo = self.init_tex_frame_buf(self.land_province_tex)
+        self.water_province_tex = self.init_tex(generate_seeds(land=False))
+        self.water_province_fbo = self.init_tex_frame_buf(self.water_province_tex)
         self.output_tex = self.init_tex(None)
         self.output_fbo = self.init_tex_frame_buf(self.output_tex)
 
@@ -171,7 +175,8 @@ class GLtests:
             log = GL.glGetProgramInfoLog(shader)
             raise ShaderException("Linking failure:\n{}\n".format(log))
 
-    def display(self, elapsedTime, resolution, renderOffset, isTexture, shader):
+    def display(self, elapsedTime, resolution, renderOffset, isTexture, shader,
+                land=True):
         #GL.glClearColor(1,1,1,1)
         #GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         GL.glUseProgram(shader)
@@ -180,13 +185,22 @@ class GLtests:
         resUniformLoc = GL.glGetUniformLocation(shader, "resolution")
         timeUniformLoc = GL.glGetUniformLocation(shader, "elapsedTime")
         selfProvinceTexLoc = GL.glGetUniformLocation(shader, "selfProvinces")
+        landProvinceTexLoc = GL.glGetUniformLocation(shader, "landProvinces")
+        waterProvinceTexLoc = GL.glGetUniformLocation(shader, "waterProvinces")
         terrainTexLoc = GL.glGetUniformLocation(shader, "terrain")
+        dividesLandLoc = GL.glGetUniformLocation(shader, "dividesLand")
         GL.glUniform1f(isTexUniformLoc, isTexture)
         GL.glUniform2f(roUniformLoc, *renderOffset)
         GL.glUniform2f(resUniformLoc, *resolution)
         GL.glUniform1f(timeUniformLoc, elapsedTime)
-        GL.glUniform1i(selfProvinceTexLoc, self.land_province_tex)
+        if(land == True):
+            GL.glUniform1i(selfProvinceTexLoc, self.land_province_tex)
+        else:
+            GL.glUniform1i(selfProvinceTexLoc, self.water_province_tex)
+        GL.glUniform1i(landProvinceTexLoc, self.land_province_tex)
+        GL.glUniform1i(waterProvinceTexLoc, self.water_province_tex)
         GL.glUniform1i(terrainTexLoc, self.terrain_tex)
+        GL.glUniform1i(dividesLandLoc, land)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER,self.vbo)
         GL.glEnableVertexAttribArray(0)
         GL.glVertexAttribPointer(0,VERT_COMPONENTS,GL.GL_FLOAT,False,0,None)
@@ -246,6 +260,11 @@ def main():
         MyGL.reshape(*TEXRES)
         MyGL.display(elapsedTime, TEXRES, (0,0), True,
                      MyGL.province_generation_shader)
+        # Render water province generation shader to texture
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.water_province_fbo)
+        MyGL.reshape(*TEXRES)
+        MyGL.display(elapsedTime, TEXRES, (0,0), True,
+                     MyGL.province_generation_shader, land=False)
         # Render province combine shader to screen
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         MyGL.reshape(*DISPLAYRES)

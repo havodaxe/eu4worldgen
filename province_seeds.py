@@ -18,13 +18,20 @@ def generate_seeds(land=True):
     seed_coords = []
 
     out = Image.new("RGBA", (5632,2048), (0,0,0,255))
-
-    redmodulus = 192
-    redminimum = 48
-    greenmodulus = 192
-    greenminimum = 48
-    bluemodulus = 32
-    blueminimum = 0
+    if(land == True):
+        redmodulus = 192
+        redminimum = 48
+        greenmodulus = 192
+        greenminimum = 48
+        bluemodulus = 32
+        blueminimum = 0
+    else:
+        redmodulus = 32
+        redminimum = 0
+        greenmodulus = 64
+        greenminimum = 64
+        bluemodulus = 128
+        blueminimum = 128
 
     for i in range(1600):
         seed_coords.append(( randint(0, out.width - 1),

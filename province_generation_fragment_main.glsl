@@ -8,11 +8,14 @@ uniform bool isTexture;
 uniform vec2 renderOffset;
 uniform vec2 resolution;
 uniform float elapsedTime;
+uniform bool dividesLand;
 
 vec2 iResolution = resolution;
 float iTime = elapsedTime;
 
 uniform sampler2D selfProvinces;
+uniform sampler2D landProvinces;
+uniform sampler2D waterProvinces;
 uniform sampler2D terrain;
 
 /* ----- main ----- */
@@ -112,12 +115,16 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
       dts = 1.0;
     }
 
-  if(tMid.r < 0.5)
+  if(dividesLand == true)
     {
-      if(pMid.a == 0.0 || lowest.a == 0.0)
+      if( tMid.r < 0.5 && (pMid.a == 0.0 || lowest.a == 0.0) )
 	{
 	  lowest = vec4(0.0, 0.0, 0.0, 1.0);
 	}
+    }
+  else if(tMid.r > 0.5)
+    {
+      lowest = vec4(0.0, 0.0, 0.0, 1.0);
     }
 
   fragColor = lowest + vec4(0, 0, 0, dts / 512);
