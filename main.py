@@ -77,11 +77,15 @@ with open("province_generation_fragment_main.glsl",'r') as myfile:
 with open("province_combine_fragment_main.glsl",'r') as myfile:
     PROVINCE_COMBINE_FRAG = myfile.read()
 
+with open("river_fragment_main.glsl",'r') as myfile:
+    RIVER_FRAG = myfile.read()
+
 class GLtests:
     def __init__(self):
         self.terrain_shader = GL.glCreateProgram()
         self.province_generation_shader = GL.glCreateProgram()
         self.province_combine_shader = GL.glCreateProgram()
+        self.river_shader = GL.glCreateProgram()
         self.vbo = None
         self.terrain_tex = None
         self.terrain_fbo = None
@@ -99,6 +103,7 @@ class GLtests:
                             PROVINCE_GENERATION_FRAG)
         self.attach_shaders(self.province_combine_shader,
                             PROVINCE_COMBINE_FRAG)
+        self.attach_shaders(self.river_shader, RIVER_FRAG)
         self.init_vertex_buf()
         vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(vao)
@@ -236,7 +241,7 @@ def main():
                     # start of rendering
                     MyGL.reshape(*TEXRES)
                     MyGL.display(elapsedTime, TEXRES, (0,0), True,
-                                 MyGL.province_combine_shader)
+                                 MyGL.river_shader)
                     pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0,
                                               GL.GL_RGB,
                                               GL.GL_UNSIGNED_BYTE)
@@ -265,11 +270,11 @@ def main():
         MyGL.reshape(*TEXRES)
         MyGL.display(elapsedTime, TEXRES, (0,0), True,
                      MyGL.province_generation_shader, land=False)
-        # Render province combine shader to screen
+        # Render river shader to screen
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         MyGL.reshape(*DISPLAYRES)
         MyGL.display(elapsedTime, DISPLAYRES, (0,0), False,
-                     MyGL.province_combine_shader)
+                     MyGL.river_shader)
         pg.display.flip()
         MyClock.tick(60)
 
