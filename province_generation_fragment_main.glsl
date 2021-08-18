@@ -16,7 +16,7 @@ float iTime = elapsedTime;
 uniform sampler2D selfProvinces;
 uniform sampler2D landProvinces;
 uniform sampler2D waterProvinces;
-uniform sampler2D terrain;
+uniform sampler2D heightmap;
 
 /* ----- main ----- */
 
@@ -56,16 +56,16 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   vec4 pTopleft  = texture( selfProvinces, coordNorm(fragCoord + vec2(-1, 1)) );
   vec4 pTop      = texture( selfProvinces, coordNorm(fragCoord + vec2( 0, 1)) );
   vec4 pTopright = texture( selfProvinces, coordNorm(fragCoord + vec2( 1, 1)) );
-  // terrain samples
-  vec4 tBotleft  = texture( terrain, coordNorm(fragCoord + vec2(-1,-1)) );
-  vec4 tBottom   = texture( terrain, coordNorm(fragCoord + vec2( 0,-1)) );
-  vec4 tBotright = texture( terrain, coordNorm(fragCoord + vec2( 1,-1)) );
-  vec4 tLeft     = texture( terrain, coordNorm(fragCoord + vec2(-1, 0)) );
-  vec4 tMid      = texture( terrain, coordNorm(fragCoord + vec2( 0, 0)) );
-  vec4 tRight    = texture( terrain, coordNorm(fragCoord + vec2( 1, 0)) );
-  vec4 tTopleft  = texture( terrain, coordNorm(fragCoord + vec2(-1, 1)) );
-  vec4 tTop      = texture( terrain, coordNorm(fragCoord + vec2( 0, 1)) );
-  vec4 tTopright = texture( terrain, coordNorm(fragCoord + vec2( 1, 1)) );
+  // heightmap samples
+  vec4 tBotleft  = texture( heightmap, coordNorm(fragCoord + vec2(-1,-1)) );
+  vec4 tBottom   = texture( heightmap, coordNorm(fragCoord + vec2( 0,-1)) );
+  vec4 tBotright = texture( heightmap, coordNorm(fragCoord + vec2( 1,-1)) );
+  vec4 tLeft     = texture( heightmap, coordNorm(fragCoord + vec2(-1, 0)) );
+  vec4 tMid      = texture( heightmap, coordNorm(fragCoord + vec2( 0, 0)) );
+  vec4 tRight    = texture( heightmap, coordNorm(fragCoord + vec2( 1, 0)) );
+  vec4 tTopleft  = texture( heightmap, coordNorm(fragCoord + vec2(-1, 1)) );
+  vec4 tTop      = texture( heightmap, coordNorm(fragCoord + vec2( 0, 1)) );
+  vec4 tTopright = texture( heightmap, coordNorm(fragCoord + vec2( 1, 1)) );
 
   // Distance to seed pixel is stored in the alpha channel
   vec4 lowest = vec4(0, 0, 0, 1);
@@ -133,8 +133,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
 void diffviz( out vec4 fragColor, in vec2 fragCoord )
 {
-  vec4 mid      = texture( terrain, coordNorm(fragCoord + vec2( 0, 0)) );
-  vec4 botleft  = texture( terrain, coordNorm(fragCoord + vec2(-1, 0)) );
+  vec4 mid      = texture( heightmap, coordNorm(fragCoord + vec2( 0, 0)) );
+  vec4 botleft  = texture( heightmap, coordNorm(fragCoord + vec2(-1, 0)) );
   float f = abs(mid.r * 255 - botleft.r * 255) / 2.6;
   fragColor = vec4(f,f,f,1);
   //fragColor = mid;

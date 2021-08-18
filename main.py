@@ -62,14 +62,16 @@ SHADER2STRING = {GL.GL_VERTEX_SHADER   : "vertex",
 with open("vertex_main.glsl",'r') as myfile:
     VERT = myfile.read()
 
-with open("terrain_fragment_setup.glsl",'r') as myfile:
-    TERRAIN_FRAG_SETUP = myfile.read()
-with open("terrain_fragment_noise.glsl",'r') as myfile:
-    TERRAIN_FRAG_NOISE = myfile.read()
-with open("terrain_fragment_main.glsl",'r') as myfile:
-    TERRAIN_FRAG_MAIN = myfile.read()
+with open("heightmap_fragment_setup.glsl",'r') as myfile:
+    HEIGHTMAP_FRAG_SETUP = myfile.read()
+with open("heightmap_fragment_noise.glsl",'r') as myfile:
+    HEIGHTMAP_FRAG_NOISE = myfile.read()
+with open("heightmap_fragment_main.glsl",'r') as myfile:
+    HEIGHTMAP_FRAG_MAIN = myfile.read()
 
-TERRAIN_FRAG = TERRAIN_FRAG_SETUP + TERRAIN_FRAG_NOISE + TERRAIN_FRAG_MAIN
+HEIGHTMAP_FRAG = "{}{}{}".format(HEIGHTMAP_FRAG_SETUP,
+                                 HEIGHTMAP_FRAG_NOISE,
+                                 HEIGHTMAP_FRAG_MAIN)
 
 with open("province_generation_fragment_main.glsl",'r') as myfile:
     PROVINCE_GENERATION_FRAG = myfile.read()
@@ -82,13 +84,13 @@ with open("river_fragment_main.glsl",'r') as myfile:
 
 class GLtests:
     def __init__(self):
-        self.terrain_shader = GL.glCreateProgram()
+        self.heightmap_shader = GL.glCreateProgram()
         self.province_generation_shader = GL.glCreateProgram()
         self.province_combine_shader = GL.glCreateProgram()
         self.river_shader = GL.glCreateProgram()
         self.vbo = None
-        self.terrain_tex = None
-        self.terrain_fbo = None
+        self.heightmap_tex = None
+        self.heightmap_fbo = None
         self.land_province_tex = None
         self.land_province_fbo = None
         self.water_province_tex = None
@@ -98,7 +100,7 @@ class GLtests:
         self.init_all()
         self.reshape(*DISPLAYRES)
     def init_all(self):
-        self.attach_shaders(self.terrain_shader, TERRAIN_FRAG)
+        self.attach_shaders(self.heightmap_shader, HEIGHTMAP_FRAG)
         self.attach_shaders(self.province_generation_shader,
                             PROVINCE_GENERATION_FRAG)
         self.attach_shaders(self.province_combine_shader,
@@ -107,8 +109,8 @@ class GLtests:
         self.init_vertex_buf()
         vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(vao)
-        self.terrain_tex = self.init_tex(None)
-        self.terrain_fbo = self.init_tex_frame_buf(self.terrain_tex)
+        self.heightmap_tex = self.init_tex(None)
+        self.heightmap_fbo = self.init_tex_frame_buf(self.heightmap_tex)
         self.land_province_tex = self.init_tex(generate_seeds(land=True))
         self.land_province_fbo = self.init_tex_frame_buf(self.land_province_tex)
         self.water_province_tex = self.init_tex(generate_seeds(land=False))
@@ -192,7 +194,7 @@ class GLtests:
         selfProvinceTexLoc = GL.glGetUniformLocation(shader, "selfProvinces")
         landProvinceTexLoc = GL.glGetUniformLocation(shader, "landProvinces")
         waterProvinceTexLoc = GL.glGetUniformLocation(shader, "waterProvinces")
-        terrainTexLoc = GL.glGetUniformLocation(shader, "terrain")
+        heightmapTexLoc = GL.glGetUniformLocation(shader, "heightmap")
         dividesLandLoc = GL.glGetUniformLocation(shader, "dividesLand")
         GL.glUniform1f(isTexUniformLoc, isTexture)
         GL.glUniform2f(roUniformLoc, *renderOffset)
@@ -204,7 +206,7 @@ class GLtests:
             GL.glUniform1i(selfProvinceTexLoc, self.water_province_tex)
         GL.glUniform1i(landProvinceTexLoc, self.land_province_tex)
         GL.glUniform1i(waterProvinceTexLoc, self.water_province_tex)
-        GL.glUniform1i(terrainTexLoc, self.terrain_tex)
+        GL.glUniform1i(heightmapTexLoc, self.heightmap_tex)
         GL.glUniform1i(dividesLandLoc, land)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER,self.vbo)
         GL.glEnableVertexAttribArray(0)
@@ -255,11 +257,11 @@ def main():
                     tex_out.save(tex_file_name)
                     print("Saved texture to {}".format(tex_file_name))
         elapsedTime = time() - start_time
-        # Render terrain shader to texture
-        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.terrain_fbo)
+        # Render heightmap shader to texture
+        GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.heightmap_fbo)
         MyGL.reshape(*TEXRES)
         MyGL.display(elapsedTime, TEXRES, (0,0), True,
-                     MyGL.terrain_shader)
+                     MyGL.heightmap_shader)
         # Render land province generation shader to texture
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, MyGL.land_province_fbo)
         MyGL.reshape(*TEXRES)
@@ -270,11 +272,11 @@ def main():
         MyGL.reshape(*TEXRES)
         MyGL.display(elapsedTime, TEXRES, (0,0), True,
                      MyGL.province_generation_shader, land=False)
-        # Render river shader to screen
+        # Render province combine shader to screen
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         MyGL.reshape(*DISPLAYRES)
         MyGL.display(elapsedTime, DISPLAYRES, (0,0), False,
-                     MyGL.river_shader)
+                     MyGL.province_combine_shader)
         pg.display.flip()
         MyClock.tick(60)
 

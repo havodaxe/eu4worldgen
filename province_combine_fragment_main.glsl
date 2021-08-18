@@ -16,7 +16,7 @@ float iTime = elapsedTime;
 uniform sampler2D selfProvinces;
 uniform sampler2D landProvinces;
 uniform sampler2D waterProvinces;
-uniform sampler2D terrain;
+uniform sampler2D heightmap;
 
 /* ----- main ----- */
 
@@ -31,7 +31,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
   vec4 land  = texture( landProvinces,  coordNorm(fragCoord) );
   vec4 water = texture( waterProvinces, coordNorm(fragCoord) );
-  vec4 tMid = texture( terrain,       coordNorm(fragCoord) );
+  vec4 tMid = texture( heightmap,       coordNorm(fragCoord) );
 
   vec4 colorOut = land;
 
