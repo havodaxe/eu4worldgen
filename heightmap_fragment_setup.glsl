@@ -14,4 +14,4 @@ float iTime = elapsedTime;
 uniform sampler2D selfProvinces;
 uniform sampler2D landProvinces;
 uniform sampler2D waterProvinces;
-uniform sampler2D terrain;
+uniform sampler2D heightmap;
