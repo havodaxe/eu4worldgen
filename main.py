@@ -82,12 +82,16 @@ with open("province_combine_fragment_main.glsl",'r') as myfile:
 with open("river_fragment_main.glsl",'r') as myfile:
     RIVER_FRAG = myfile.read()
 
+with open("terrain_fragment_main.glsl",'r') as myfile:
+    TERRAIN_FRAG = myfile.read()
+
 class GLtests:
     def __init__(self):
         self.heightmap_shader = GL.glCreateProgram()
         self.province_generation_shader = GL.glCreateProgram()
         self.province_combine_shader = GL.glCreateProgram()
         self.river_shader = GL.glCreateProgram()
+        self.terrain_shader = GL.glCreateProgram()
         self.vbo = None
         self.heightmap_tex = None
         self.heightmap_fbo = None
@@ -106,6 +110,7 @@ class GLtests:
         self.attach_shaders(self.province_combine_shader,
                             PROVINCE_COMBINE_FRAG)
         self.attach_shaders(self.river_shader, RIVER_FRAG)
+        self.attach_shaders(self.terrain_shader, TERRAIN_FRAG)
         self.init_vertex_buf()
         vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(vao)
@@ -272,11 +277,11 @@ def main():
         MyGL.reshape(*TEXRES)
         MyGL.display(elapsedTime, TEXRES, (0,0), True,
                      MyGL.province_generation_shader, land=False)
-        # Render province combine shader to screen
+        # Render new terrain shader to screen
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         MyGL.reshape(*DISPLAYRES)
         MyGL.display(elapsedTime, DISPLAYRES, (0,0), False,
-                     MyGL.province_combine_shader)
+                     MyGL.terrain_shader)
         pg.display.flip()
         MyClock.tick(60)
 
