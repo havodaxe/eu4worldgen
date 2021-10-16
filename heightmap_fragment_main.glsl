@@ -10,7 +10,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   vec2 p = (fragCoord.xy + renderOffset) / iResolution.xy;
   float r = iResolution.y / iResolution.x;
   vec2 uv = p*vec2(iResolution.x/iResolution.y,1.0 ) * tau * r;
-  vec2 o_uv = uv + vec2(4.14, 0);
+  vec2 o_uv = uv + vec2(0, 0);
   vec3 latsurf = vec3(cos(o_uv.x), sin(o_uv.x), o_uv.y);
 
   float f = 0.0;
@@ -38,10 +38,10 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
   float wateredge = f - 0.44;
 
-  f = mix(wateredge * 0.5, f, leftlerp);
-  f = mix(wateredge * 0.5, f, rightlerp);
-  f = mix(wateredge * 0.5, f, bottomlerp);
-  f = mix(wateredge * 0.5, f, toplerp);
+  //f = mix(wateredge * 0.5, f, leftlerp);
+  //f = mix(wateredge * 0.5, f, rightlerp);
+  //f = mix(wateredge * 0.5, f, bottomlerp);
+  //f = mix(wateredge * 0.5, f, toplerp);
 
   f = f * 1.2;
   f = 0.5 + 0.5*f;

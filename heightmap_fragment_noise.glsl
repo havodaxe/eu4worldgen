@@ -22,13 +22,29 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // ======================================================================
 
-vec3 hash( vec3 p ) // replace this by something better
+vec3 iqFloatHash( vec3 p ) // legacy, do not use
 {
+  /*
+   * This "hash" produces inconsistent behaviour depending on hardware
+   * and potentially other factors. Here for now for legacy reasons.
+   * It has been superseded by an integer-based hash called pcg3d,
+   * see pcg_hash.glsl
+   */
 	p = vec3( dot(p,vec3(127.1,311.7, 74.7)),
 			  dot(p,vec3(269.5,183.3,246.1)),
 			  dot(p,vec3(113.5,271.9,124.6)));
 
 	return -1.0 + 2.0*fract(sin(p)*43758.5453123);
+}
+
+vec3 hash( vec3 p )
+{
+  // pcg3d has integer interfaces, so it needs input and output converted.
+  uvec3 hashResult = pcg3d(floatBitsToUint(p));
+  vec3 returnValue = vec3(0.0, 0.0, 0.0);
+  returnValue = vec3(hashResult)/float(0x7fffffffU) - 1.0;
+  //returnValue = iqFloatHash(p); // old rounding error hash
+  return(returnValue);
 }
 
 float noise( in vec3 p )

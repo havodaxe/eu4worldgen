@@ -68,10 +68,13 @@ with open("heightmap_fragment_noise.glsl",'r') as myfile:
     HEIGHTMAP_FRAG_NOISE = myfile.read()
 with open("heightmap_fragment_main.glsl",'r') as myfile:
     HEIGHTMAP_FRAG_MAIN = myfile.read()
+with open("pcg_hash.glsl", 'r') as myfile:
+    PCG_HASH = myfile.read()
 
-HEIGHTMAP_FRAG = "{}{}{}".format(HEIGHTMAP_FRAG_SETUP,
-                                 HEIGHTMAP_FRAG_NOISE,
-                                 HEIGHTMAP_FRAG_MAIN)
+HEIGHTMAP_FRAG = "{}{}{}{}".format(HEIGHTMAP_FRAG_SETUP,
+                                   PCG_HASH,
+                                   HEIGHTMAP_FRAG_NOISE,
+                                   HEIGHTMAP_FRAG_MAIN)
 
 with open("province_generation_fragment_main.glsl",'r') as myfile:
     PROVINCE_GENERATION_FRAG = myfile.read()
@@ -248,7 +251,7 @@ def main():
                     # start of rendering
                     MyGL.reshape(*TEXRES)
                     MyGL.display(elapsedTime, TEXRES, (0,0), True,
-                                 MyGL.river_shader)
+                                 MyGL.heightmap_shader)
                     pixels = GL.glGetTexImage(GL.GL_TEXTURE_2D, 0,
                                               GL.GL_RGB,
                                               GL.GL_UNSIGNED_BYTE)
@@ -277,11 +280,11 @@ def main():
         MyGL.reshape(*TEXRES)
         MyGL.display(elapsedTime, TEXRES, (0,0), True,
                      MyGL.province_generation_shader, land=False)
-        # Render new terrain shader to screen
+        # Render heightmap shader to screen
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         MyGL.reshape(*DISPLAYRES)
         MyGL.display(elapsedTime, DISPLAYRES, (0,0), False,
-                     MyGL.terrain_shader)
+                     MyGL.heightmap_shader)
         pg.display.flip()
         MyClock.tick(60)
 
